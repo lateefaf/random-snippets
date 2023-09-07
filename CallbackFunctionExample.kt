@@ -17,7 +17,12 @@ object Example {
         var intArg: Int = 0
         var boolArg: Boolean = false
         override fun validateArgs(args: Map<String, String>) {
-            TODO("Crash if argument validation fails")
+            val requiredKeys = getArgLoaders().filterValues { it.required() }.keys
+            for (key in requiredKeys) {
+                if (!args.containsKey(key)) {
+                    throw IllegalArgumentException("Missing required argument: $key")
+                }
+            }
         }
 
         override fun getArgLoaders(): Map<String, ArgWrapper<Any>> {
@@ -81,6 +86,6 @@ object Example {
         }
         instance as Concrete
         assert(instance.intArg == 5)
-        assert(instance.boolArg)
+        assert(!instance.boolArg)
     }
 }
