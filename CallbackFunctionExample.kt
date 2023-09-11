@@ -1,4 +1,4 @@
-interface IArgsLoadable{
+interface IArgsLoadable<T> {
     fun validateArgs(args: Map<String, String>)
     fun getArgLoaders(): Map<String, ArgWrapper<Any>>
 }
@@ -13,7 +13,7 @@ interface IntArg : ArgWrapper<Int>
 
 
 object Example {
-    class Concrete() : IArgsLoadable{
+    class Concrete() : IArgsLoadable<Any?> {
         var intArg: Int = 0
         var boolArg: Boolean = false
         override fun validateArgs(args: Map<String, String>) {
@@ -64,7 +64,7 @@ object Example {
                 "boolArg" to "false"
         )
 
-        if(instance is IArgsLoadable){ //Won't always be true in real project
+        if(instance is IArgsLoadable<Any?>){ //Won't always be true in real project
             println("Validating args")
             instance.validateArgs(args)
             val callbacks = instance.getArgLoaders()

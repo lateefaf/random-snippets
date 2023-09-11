@@ -1,34 +1,32 @@
-// ... Your imports ...
+class ValueStrategyFactory(private val parser: ArgumentParser, private val applicationContext: ApplicationContext) {
+    fun produce(columnDescriptor: SchemaColumn): IGenerationStrategy {
+        // Parse the arguments using your ArgumentParser
+        val args: Map<String, String> = parser.parse(columnDescriptor.valueStrategy.args)
 
-class ValueStrategyFactory {
-    private val parser = ArgumentParser()
+        // Retrieve an instance of a class that should implement IArgsLoadable
+        val temp = applicationContext.getBean<Any>(columnDescriptor.valueStrategy.strategyName)  // Assume strategyName provides the bean name
 
-    fun produce(applicationContext: ApplicationContext, columnDescriptor: SchemaColumn): IGenerationStrategy {
-        val args: Map<String, String> = parser.parse("columnDescriptor.valueStrategy.args")
-        val temp = applicationContext.getBean<Any>("columnDescriptor.valueStrategy") //check for null
-
-        if (temp is IArgsLoadable<*>) {
+        return if (temp is IArgsLoadable<*>) {
+            // Cast the retrieved bean to its actual type (the concrete type that implements IArgsLoadable)
             val instance = temp as IArgsLoadable<Any>
 
-            // Assuming getArgs() now includes both required and optional arguments
-            val allArgs = instance.getArgs()
+            // Fetch the argument definitions (ArgWrapper instances) from the IArgsLoadable instance
+            val argDefinitions = instance.getArgs()
 
-            for ((argName, argDefinition) in allArgs) {
-                if (argDefinition is IntegerArgument<*>) {
-                    // Since the value is coming from a map, ensure the key exists to prevent null issues
-                    val value = args[argName] ?: throw IllegalArgumentException("Missing required argument: $argName")
-                    argDefinition.validateAndLoad(instance, value)
+            for ((argName, argWrapper) in argDefinitions) {
+                if (argWrapper.isRequired && !args.containsKey(argName)) {
+                    throw IllegalArgumentException("Missing required argument: $argName")
                 }
+
+                // Convert and validate the argument, then load it
+                val argValue = argWrapper.convert(args[argName] ?: "")
+                argWrapper.validate(instance, argValue)
+                argWrapper.load(instance, argValue)
             }
 
-            // Validate and load remaining args
-            for ((argName, value) in args) {
-                allArgs[argName]?.validateAndLoad(instance, value)
-            }
-
-            return instance as IGenerationStrategy
+            instance as IGenerationStrategy  // Assume the class also implements IGenerationStrategy
         } else {
-            throw IllegalArgumentException("Bean is not an instance of IArgsLoadable.")
+            throw IllegalArgumentException("The specified strategy does not implement IArgsLoadable")
         }
     }
 }
