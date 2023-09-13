@@ -58,3 +58,9 @@ fun main() {
 
     println("intArg: ${instance.intArg}, doubleArg: ${instance.doubleArg}")
 }
+
+fun validateArguments(args: Map<String, String>) {
+    assert(args["min"]!!.toInt() <= args["max"]!!.toInt()) {
+        throw IllegalArgumentException("Min should be less than or equal to Max.")
+    }
+}

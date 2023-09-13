@@ -1,32 +1,28 @@
 class ValueStrategyFactory(private val parser: ArgumentParser, private val applicationContext: ApplicationContext) {
-    fun produce(columnDescriptor: SchemaColumn): IGenerationStrategy {
-        // Parse the arguments using your ArgumentParser
-        val args: Map<String, String> = parser.parse(columnDescriptor.valueStrategy.args)
+    fun produce(applicationContext: ApplicationContext, columnDescriptor: SchemaColumn): IGenerationStrategy {
+        val args: Map<String, String> = parser.parse(columnDescriptor.valueStrategy.args) // assumed the args are stored in a string field
+        val temp = applicationContext.getBean<Any>(columnDescriptor.valueStrategy.beanName) // assumed the bean name is stored in a field
 
-        // Retrieve an instance of a class that should implement IArgsLoadable
-        val temp = applicationContext.getBean<Any>(columnDescriptor.valueStrategy.strategyName)  // Assume strategyName provides the bean name
+        if (temp is IArgsLoadable<*>) {
+            val instance = temp as IArgsLoadable<*>
+            val allArgs = instance.getAllArgs()
 
-        return if (temp is IArgsLoadable<*>) {
-            // Cast the retrieved bean to its actual type (the concrete type that implements IArgsLoadable)
-            val instance = temp as IArgsLoadable<Any>
-
-            // Fetch the argument definitions (ArgWrapper instances) from the IArgsLoadable instance
-            val argDefinitions = instance.getArgs()
-
-            for ((argName, argWrapper) in argDefinitions) {
+            for ((argName, argWrapper) in allArgs) {
                 if (argWrapper.isRequired && !args.containsKey(argName)) {
                     throw IllegalArgumentException("Missing required argument: $argName")
                 }
 
-                // Convert and validate the argument, then load it
-                val argValue = argWrapper.convert(args[argName] ?: "")
-                argWrapper.validate(instance, argValue)
-                argWrapper.load(instance, argValue)
+                val stringValue = args[argName] ?: ""
+                val typedValue = argWrapper.convert(stringValue)
+
+                @Suppress("UNCHECKED_CAST")
+                (argWrapper as ArgWrapper<Any, Any>).validateAndLoad(instance, typedValue)
             }
 
-            instance as IGenerationStrategy  // Assume the class also implements IGenerationStrategy
+            // ... your remaining logic to produce IGenerationStrategy instance goes here
+            return instance as IGenerationStrategy // Just a sample, your actual logic may vary
         } else {
-            throw IllegalArgumentException("The specified strategy does not implement IArgsLoadable")
+            throw IllegalArgumentException("Bean does not implement IArgsLoadable: ${columnDescriptor.valueStrategy.beanName}")
         }
     }
 }
