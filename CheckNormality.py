@@ -1,6 +1,15 @@
+import csv
 import matplotlib.pyplot as plt
 from scipy import stats
 import numpy as np
+
+def read_csv_file(file_path):
+    data = []
+    with open(file_path, 'r') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        for row in csv_reader:
+            data.append(float(row[0]))
+    return data
 
 def plot_and_check_distribution(data):
     # Plot histogram
@@ -19,5 +28,5 @@ def plot_and_check_distribution(data):
         print(f"The data does not appear to be normally distributed (p-value = {p_value}).")
 
 if __name__ == "__main__":
-    data = [1.0, 2.1, 2.9, 3.5, 3.7, 4.1, 4.3, 5.0, 5.5, 5.8, 6.0, 6.2, 7.5, 7.9, 8.2, 8.5]
+    data = read_csv_file("input.csv")
     plot_and_check_distribution(data)
