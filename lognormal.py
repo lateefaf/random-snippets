@@ -26,9 +26,6 @@ def plot_and_check_distribution(data, graph_path, result_path):
     n = len(data)
     mean = np.mean(data)
     variance = np.var(data)
-    log_data = np.log(data)
-    mean_log = np.mean(log_data)
-    std_dev_log = np.std(log_data)
 
     # Plot histogram of averaged data
     plot_histogram(data, "Histogram of Averaged Data", "Value", "Frequency", f"{graph_path}.png")
@@ -36,7 +33,7 @@ def plot_and_check_distribution(data, graph_path, result_path):
     # Chi-Squared Test
     num_bins = int(np.sqrt(n))
     hist, bin_edges = np.histogram(data, bins=num_bins)
-    pdf_lognorm = stats.lognorm.pdf(bin_edges, std_dev_log, 0, np.exp(mean_log))
+    pdf_lognorm = stats.lognorm.pdf(bin_edges, np.sqrt(variance), 0, mean)
     expected_freq = pdf_lognorm * n
     chi_stat, chi_p_value = stats.chisquare(f_obs=hist, f_exp=expected_freq[1:] - expected_freq[:-1])
 
@@ -47,8 +44,6 @@ def plot_and_check_distribution(data, graph_path, result_path):
     n = {n}
     Mean = {mean}
     Variance = {variance}
-    Mean of log(data) = {mean_log}
-    Standard Deviation of log(data) = {std_dev_log}
     """
 
     if chi_p_value > alpha:
