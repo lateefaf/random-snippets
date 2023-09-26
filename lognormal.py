@@ -14,10 +14,31 @@ def write_result_to_file(file_path, text):
         file.write(text)
 
 def plot_histogram(data, title, xlabel, ylabel, file_name):
-    plt.hist(data, bins='auto', alpha=0.7, color='blue', edgecolor='black')
+    # Plot histogram of data
+    plt.hist(data, bins='auto', alpha=0.5, color='blue', edgecolor='black', density=True, label='Averaged Data')
+
+    # Calculate mean and variance for Log-Normal PDF
+    mean = np.mean(data)
+    variance = np.var(data)
+
+    # Generate x values
+    x = np.linspace(min(data), max(data), 1000)
+
+    # Generate y values based on Log-Normal PDF
+    pdf_lognorm = stats.lognorm.pdf(x, np.sqrt(variance), 0, mean)
+
+    # Plot Log-Normal PDF
+    plt.plot(x, pdf_lognorm, 'r-', label='Log-Normal PDF')
+
+    # Add labels and title
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+
+    # Add legend
+    plt.legend()
+
+    # Save plot
     plt.savefig(file_name)
     plt.show()
 
@@ -27,15 +48,15 @@ def plot_and_check_distribution(data, graph_path, result_path):
     mean = np.mean(data)
     variance = np.var(data)
 
-    # Plot histogram of averaged data
-    plot_histogram(data, "Histogram of Averaged Data", "Value", "Frequency", f"{graph_path}.png")
+    # Plot histogram of averaged data and overlay Log-Normal PDF
+    plot_histogram(data, "Histogram with Log-Normal PDF", "Value", "Density", f"{graph_path}.png")
 
     # Chi-Squared Test
     num_bins = int(np.sqrt(n))
-    hist, bin_edges = np.histogram(data, bins=num_bins)
+    hist, bin_edges = np.histogram(data, bins=num_bins, density=True)
     pdf_lognorm = stats.lognorm.pdf(bin_edges, np.sqrt(variance), 0, mean)
-    expected_freq = pdf_lognorm * n
-    chi_stat, chi_p_value = stats.chisquare(f_obs=hist, f_exp=expected_freq[1:] - expected_freq[:-1])
+    expected_freq = pdf_lognorm * (bin_edges[1:] - bin_edges[:-1]) * n
+    chi_stat, chi_p_value = stats.chisquare(f_obs=hist * (bin_edges[1:] - bin_edges[:-1]) * n, f_exp=expected_freq)
 
     alpha = 0.05  # Significance level
     result_text = f"""Chi-Squared Test Result:
