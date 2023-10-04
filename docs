@@ -1,0 +1,67 @@
+Excel Input Sheet Guide
+
+ENTITY
+
+    Description: Name of the database entity or table for which synthetic data is to be generated.
+    Example: Customer
+    Required: Yes/No
+
+COLUMN_NAME
+
+    Description: Name of the column in the database entity.
+    Example: first_name
+    Required: Yes/No
+
+DATA_TYPE
+
+    Description: Data type of the column.
+    Example: String, Integer, Date
+    Required: Yes/No
+
+LENGTH
+
+    Description: Length of the data to be generated.
+    Example: 50
+    Required: Yes/No (Mention if it is conditional based on DATA_TYPE)
+
+REFERENCE_ENTITY
+
+    Description: The entity that this column refers to, if any.
+    Example: Address
+    Required: Yes/No
+
+REFERENCE_COLUMN
+
+    Description: The column in the reference entity that this column refers to.
+    Example: address_id
+    Required: Yes/No
+
+VALUE_STRATEGY
+
+    Description: Strategy for generating values for this column.
+    Example: Random, Sequential
+    Required: Yes/No
+
+VALUE_STRATEGY_ARGS
+
+    Description: Additional arguments for the value strategy.
+    Example: {"min": 1, "max": 100}
+    Required: Yes/No
+
+OUTPUT_STRATEGY
+
+    Description: Strategy for outputting the generated data.
+    Example: CSV, JSON
+    Required: Yes/No
+
+OUTPUT_STRATEGY_ARGS
+
+    Description: Additional arguments for the output strategy.
+    Example: {"delimiter": ","}
+    Required: Yes/No
+
+NOTES (Analyst ONLY)
+
+    Description: Any notes or comments that only the analyst should consider.
+    Example: This column should have unique values.
+    Required: No
