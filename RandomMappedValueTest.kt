@@ -43,11 +43,24 @@ class RandomMappedValueStrategyTest {
 
     @Test
     fun testProduce() {
-        // Call the produce method
-        strategy.produce(mockGraphState)
+        val iterations = 1000
+        val frequencyMap: MutableMap<String, Int> = mutableMapOf()
 
-        // Validate that the output is either "A", "B", or "C"
-        // Actual validation might require running the test multiple times to ensure the distribution
+        for (i in 1..iterations) {
+            strategy.produce(mockGraphState)
+            val value = mockGraphState[strategy.targetEntity, strategy.targetColumn]
+            frequencyMap[value.toString()] = frequencyMap.getOrDefault(value.toString(), 0) + 1
+        }
+
+        // Given the weights, A should be selected ~25% of the time and B ~75% of the time
+        val aCount = frequencyMap["A"] ?: 0
+        val bCount = frequencyMap["B"] ?: 0
+
+        val aProb = aCount.toDouble() / iterations
+        val bProb = bCount.toDouble() / iterations
+
+        assertTrue(aProb > 0.2 && aProb < 0.3, "A was selected with a frequency of $aProb")
+        assertTrue(bProb > 0.7 && bProb < 0.8, "B was selected with a frequency of $bProb")
     }
 
     @Test
