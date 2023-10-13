@@ -26,13 +26,4 @@ fun main() {
         frequencyMap[generatedValue] = frequencyMap.getOrDefault(generatedValue, 0) + 1
     }
 
-    // Write the frequencies to a CSV file
-    FileWriter("frequency.csv").use { writer ->
-        writer.append("Value,Frequency\n")
-        for ((value, frequency) in frequencyMap) {
-            writer.append("$value,$frequency\n")
-        }
-    }
-
-    println("Frequency of each generated value has been written to frequency.csv")
-}
+g=
