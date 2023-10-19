@@ -1,0 +1,97 @@
+
+WeightedRandomValueStrategy:
+File Content: The file content is set up to have four values: "A", "B", "C", and "D" with respective weights of 1, 1, 2, and 2.
+Expected Probabilities: Given the weights, "A" and "B" should be selected 16.67% of the time, while "C" and "D" should be selected 33.33% of the time.
+Tolerance: A 5% tolerance is set, allowing for slight variations due to the randomness.
+
+Initialization in onConstructOrLoad()
+
+    Total Weight: The total weight is 1+1+2+2=61+1+2+2=6.
+    Probabilities: Probabilities for "A" and "B" would be 1/6 or approx 0.1667. For "C" and "D", it would be 2/6 or approx 0.3333.
+    Cumulative Sums: The cumulative sums would be calculated as:
+        "A": 0.1667
+        "B": 0.3334 (0.1667 + 0.1667)
+        "C": 0.6667 (0.3334 + 0.3333)
+        "D": 1.0000 (0.6667 + 0.3333)
+
+These cumulative sums are stored in cumulativeSumList for quick lookup during the produce function.
+produce() Method
+
+The loop in produce is responsible for selecting a value based on the calculated cumulative sums.
+
+    Generate Random Value: A random double between 0 and 1 (the maximum cumulative sum) is generated. Let's say it's 0.4 for illustration.
+    Loop Through Cumulative Sums: The loop iterates through the cumulativeSumList in descending order. This list has pairs of the form (value, cumulative sum).
+
+Here's how the loop logic works:
+
+    Iteration 1: For "D" with upperBound = 1.0000
+        cumSum = 0.6667 (cumulative sum for "C")
+        Check if 0.4 lies between cumSum and upperBound (0.6667 and 1). It doesn't, so move to the next iteration.
+    Iteration 2: For "C" with upperBound = 0.6667
+        cumSum = 0.3334 (cumulative sum for "B")
+        Check if 0.4 lies between cumSum and upperBound (0.3334 and 0.6667). It does, so "C" is selected, and the loop exits.
+WeightedMappedValueStrategy:
+Input file is:
+A,B,1
+A,C,1
+A,D,2
+B,E,1
+B,F,2
+B,G,1
+
+weightedMap = {
+    "A" -> [("B", 0.25), ("C", 0.25), ("D", 0.5)],
+    "B" -> [("E", 0.25), ("F", 0.5), ("G", 0.25)]
+}
+
+Step-by-Step Iteration
+First Iteration
+
+    Retrieve the Lookup Value:
+        lookupValue = graphState["readEntity", "readColumn"]
+        lookupValue = "A"
+
+    Find Weighted Values:
+        weightedValues = weightedMap["A"]
+        weightedValues = [("B", 0.25), ("C", 0.25), ("D", 0.5)]
+
+    Generate Random Number:
+        Assume randomValue = 0.1
+
+    Loop Through Weighted Values:
+        First Loop:
+            value = "B", weight = 0.25
+            cumulativeProbability = 0 + 0.25 = 0.25
+            randomValue (0.1) <= cumulativeProbability (0.25)
+            Condition is True, so assign "B" to the target column and exit the loop.
+
+    Assign Value:
+        graphState["writeEntity", "writeColumn"] = "B"
+
+Second Iteration
+
+Suppose in the next iteration, graphState["readEntity", "readColumn"] is set to "B":
+
+    Retrieve the Lookup Value:
+        lookupValue = "B"
+
+    Find Weighted Values:
+        weightedValues = [("E", 0.25), ("F", 0.5), ("G", 0.25)]
+
+    Generate Random Number:
+        Assume randomValue = 0.6
+
+    Loop Through Weighted Values:
+        First Loop:
+            value = "E", weight = 0.25
+            cumulativeProbability = 0.25
+            randomValue (0.6) > cumulativeProbability (0.25)
+            Continue to the next loop.
+        Second Loop:
+            value = "F", weight = 0.5
+            cumulativeProbability = 0.25 + 0.5 = 0.75
+            randomValue (0.6) <= cumulativeProbability (0.75)
+            Condition is True, so assign "F" to the target column and exit the loop.
+
+    Assign Value:
+        graphState["writeEntity", "writeColumn"] = "F"
