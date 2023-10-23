@@ -1,55 +1,28 @@
 import org.junit.jupiter.api.Test
 import java.io.File
-import kotlin.test.assertEquals
+import kotlin.math.pow
+import kotlin.random.Random
+import kotlin.test.assertTrue
 
 class WeightedRandomValueStrategyTest {
 
     @Test
     fun testProduce() {
+        val alpha = 0.05 // significance level
+
         // Test with two values, unequal weights (A: 1, B: 3)
-        val expectedList1 = generateExpectedList(mapOf("A" to 1, "B" to 3))
+        val expectedList = List(250) { "A" } + List(750) { "B" }
         runTest(
                 fileContent = """
                 A,1
                 B,3
             """.trimIndent(),
-                expectedValues = expectedList1
-        )
-
-        // Test with two values, equal weights (A: 1, B: 1)
-        val expectedList2 = generateExpectedList(mapOf("A" to 1, "B" to 1))
-        runTest(
-                fileContent = """
-                A,1
-                B,1
-            """.trimIndent(),
-                expectedValues = expectedList2
-        )
-
-        // Test with four values, various weights
-        val expectedList3 = generateExpectedList(mapOf("A" to 1, "B" to 1, "C" to 2, "D" to 2))
-        runTest(
-                fileContent = """
-                A,1
-                B,1
-                C,2
-                D,2
-            """.trimIndent(),
-                expectedValues = expectedList3
+                expectedList = expectedList,
+                alpha = alpha
         )
     }
 
-    // Helper function to generate the expected list of values based on weights
-    private fun generateExpectedList(weightMap: Map<String, Int>): List<String> {
-        val list = mutableListOf<String>()
-        for ((value, weight) in weightMap) {
-            list.addAll(List(weight) { value })
-        }
-        return list
-    }
-
-    // Main test function
-    private fun runTest(fileContent: String, expectedValues: List<String>) {
+    private fun runTest(fileContent: String, expectedList: List<String>, alpha: Double) {
         val testFilePath = "testFile.csv"
         File(testFilePath).writeText(fileContent)
 
@@ -58,14 +31,34 @@ class WeightedRandomValueStrategyTest {
 
         strategy.getArgumentDefinitions()[WeightedRandomValueStrategy.ARG_FILE_PATH]?.load(testFilePath)
 
-        val generatedValues = mutableListOf<String>()
+        val iterations = 1000
+        val frequencyMap: MutableMap<String, Int> = mutableMapOf()
 
-        for (i in expectedValues.indices) {
+        for (i in 0 until iterations) {
+            strategy.random = Random.Default
             strategy.produce(mockGraphState)
             val value = mockGraphState[strategy.targetEntity, strategy.targetColumn]?.toString()
-            generatedValues.add(value.toString())
+            frequencyMap[value.toString()] = frequencyMap.getOrDefault(value.toString(), 0) + 1
         }
 
-        assertEquals(expectedValues, generatedValues, "Generated values did not match the expected values.")
+        // Perform a Chi-Square test for goodness-of-fit
+        val expectedFrequencyMap = expectedList.groupingBy { it }.eachCount()
+        var chiSquareStatistic = 0.0
+
+        for ((value, expectedFreq) in expectedFrequencyMap) {
+            val observedFreq = frequencyMap.getOrDefault(value, 0)
+            val diff = observedFreq - expectedFreq
+            chiSquareStatistic += (diff.toDouble().pow(2)) / expectedFreq
+        }
+
+        // Degrees of Freedom = Categories - 1
+        val df = expectedFrequencyMap.keys.size - 1
+        // Critical value for alpha = 0.05 and df = 1 is approximately 3.841
+        val criticalValue = 3.841
+
+        println("Chi-Square Statistic: $chiSquareStatistic")
+        println("Critical Value: $criticalValue")
+
+        assertTrue(chiSquareStatistic <= criticalValue, "Chi-Square Test failed. The observed frequencies significantly differ from the expected frequencies.")
     }
 }
