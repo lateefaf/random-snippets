@@ -1,0 +1,49 @@
+Test 1: Test Produce Function With Unequal Weights
+
+    Purpose: To check if the produce function selects values based on their weights.
+    Setup:
+        Create a CSV file with the weights: "A,1" and "B,3".
+        Initialize the WeightedRandomValueStrategy class.
+    Execution:
+        Call the produce function 1000 times.
+        Keep track of how many times "A" and "B" are selected.
+    Expected Outcome:
+        "A" should be selected approximately 250 times.
+        "B" should be selected approximately 750 times.
+
+Test 2: Test Produce Function With Equal Weights
+
+    Purpose: To check if the produce function selects values equally when the weights are the same.
+    Setup:
+        Create a CSV file with the weights: "A,1" and "B,1".
+        Initialize the WeightedRandomValueStrategy class.
+    Execution:
+        Call the produce function 1000 times.
+        Keep track of how many times "A" and "B" are selected.
+    Expected Outcome:
+        "A" should be selected approximately 500 times.
+        "B" should be selected approximately 500 times.
+
+Test 3: Test Produce Function With Multiple Values and Weights
+
+    Purpose: To check if the produce function can handle multiple values with various weights.
+    Setup:
+        Create a CSV file with the weights: "A,1", "B,1", "C,2", "D,2".
+        Initialize the WeightedRandomValueStrategy class.
+    Execution:
+        Call the produce function 1000 times.
+        Keep track of how many times each value is selected.
+    Expected Outcome:
+        "A" and "B" should each be selected approximately 167 times.
+        "C" and "D" should each be selected approximately 333 times.
+
+Test 4: Test Produce Function With Invalid Weights
+
+    Purpose: To check if the produce function throws an exception when given invalid weights.
+    Setup:
+        Create a CSV file with the weights: "A,0" and "B,-1".
+        Initialize the WeightedRandomValueStrategy class.
+    Execution:
+        Attempt to call the produce function.
+    Expected Outcome:
+        An IllegalArgumentException should be thrown.
