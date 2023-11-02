@@ -109,3 +109,42 @@ val(root, entities) = ast({
 
     // ... Serializer configurations for writing the data to files ...
 })
+
+
+
+
+
+
+
+
+
+
+val(root, entities) = ast({
+    // ... other entity definitions remain the same ...
+
+    // Adding a new column to User for AccountType
+    column("User", "Status", 5, ColumnDataType.String, 10)
+    column("User", "AccountType", 6, ColumnDataType.String, 20)
+
+    // Adding a new column to Transaction for TransactionType
+    column("Transaction", "Type", 5, ColumnDataType.String, 20)
+
+    // ... other assign1 and condition configurations remain the same ...
+
+    // Assigning user status with a RandomMappedValueStrategy
+    assign1("User.Status"){
+        strategy = RandomMappedValueStrategy("user_status_weights.txt") // Randomly assigns a status to the user
+    }
+
+    // Assigning AccountType based on the User's Status
+    assign1("User.AccountType"){
+        strategy = WeightedMappedValueStrategy("User.Status", "user_status_weights.txt") // Determines account type based on user status
+    }
+
+    // Assigning TransactionType based on weighted random choice
+    assign1("Transaction.Type"){
+        strategy = RandomMappedValueStrategy("transaction_type_weights.txt") // Randomly assigns a transaction type
+    }
+
+    // ... rest of the loop configurations remain the same ...
+})
