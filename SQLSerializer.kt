@@ -43,4 +43,52 @@ class SQLSerializer(
             else -> value.toString() // Simplified for example purposes
         }
     }
+
+    private fun formatColumn(schemaColumn: SchemaColumn, value: Any): String {
+        return when (value) {
+            is String -> formatStringType(schemaColumn, value)
+            "VARBINARY" -> formatVarBinary(value as ByteArray, schemaColumn.length)
+            is BigDecimal -> value.setScale(schemaColumn.decimalPlaces, RoundingMode.HALF_UP).toString()
+            is Float, is Double -> BigDecimal(value.toString()).setScale(schemaColumn.decimalPlaces, RoundingMode.HALF_UP).toString()
+            is Date -> formatDateType(schemaColumn, value)
+            is ByteArray -> formatBinaryType(schemaColumn, value)
+            // ... [Other types]
+            else -> value.toString()
+        }
+    }
+
+    private fun formatStringType(schemaColumn: SchemaColumn, value: String): String {
+        var formattedValue = value.replace("'", "''")
+        when (schemaColumn.type) {
+            "CHAR", "VARCHAR", "TEXT", "TINYTEXT", "MEDIUMTEXT" -> {
+                if (schemaColumn.length != -1) {
+                    formattedValue = formattedValue.substring(0, minOf(formattedValue.length, schemaColumn.length))
+                }
+            }
+            "ENUM", "SET" -> {
+                // Special handling for ENUM or SET if needed
+            }
+        }
+        return "'$formattedValue'"
+    }
+
+    private fun formatDateType(schemaColumn: SchemaColumn, value: Date): String {
+        val format = when (schemaColumn.type) {
+            "DATE" -> SimpleDateFormat("yyyy-MM-dd")
+            "DATETIME", "TIMESTAMP" -> SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            "TIME" -> SimpleDateFormat("HH:mm:ss")
+            "YEAR" -> SimpleDateFormat("yyyy")
+            else -> SimpleDateFormat("yyyy-MM-dd HH:mm:ss") // Default format
+        }
+        return "'${format.format(value)}'"
+    }
+
+    private fun formatBinaryType(schemaColumn: SchemaColumn, value: ByteArray): String {
+        val formattedValue = value.take(schemaColumn.length).joinToString("") { String.format("%02X", it) }
+        return "0x$formattedValue"
+    }
+    private fun formatVarBinary(value: ByteArray, length: Int): String {
+        val formattedValue = value.take(length).joinToString("") { String.format("%02X", it) }
+        return "0x$formattedValue"
+    }
 }
