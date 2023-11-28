@@ -92,3 +92,39 @@ class SQLSerializer(
         return "0x$formattedValue"
     }
 }
+
+class SQLSerializer(
+        private val tableName: String,
+        private val columnDataTypes: Map<String, String>, // Add this parameter
+        private val appendMode: Boolean = false,
+        private val extension: String = ".sql"
+) {
+    private val writer = StringBuilder()
+
+    fun serialize(graphState: IGraphState, schemaEntities: SchemaEntities, entityName: String) {
+        // ... [Serialization logic]
+    }
+
+    private fun formatColumn(columnName: String, value: Any): String {
+        val dataType = columnDataTypes[columnName] ?: return value.toString()
+
+        return when (dataType) {
+            "CHAR", "VARCHAR", "TEXT", "TINYTEXT", "MEDIUMTEXT" -> formatString(value.toString(), /* Assume length from somewhere */)
+            "VARBINARY" -> formatVarBinary(value as ByteArray, /* Assume length from somewhere */)
+            // ... other data types
+            "INT", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT" -> castToInt(value, dataType)
+            // ... add other data types as needed
+            else -> value.toString()
+        }
+    }
+
+    private fun castToInt(value: Any, dataType: String): String {
+        // ... [castToInt implementation]
+    }
+
+    // ... [Other formatting methods]
+}
+
+// Usage Example
+val columnTypes = mapOf("columnName1" to "VARCHAR", "columnName2" to "INT")
+val serializer = SQLSerializer("tableName", columnTypes)
