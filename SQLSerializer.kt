@@ -230,3 +230,7 @@ data class SQLTimeType(val fractionalSecondsPrecision: Int) : SQLDataType() // F
 data class SQLDateTimeType(val fractionalSecondsPrecision: Int) : SQLDataType() // For DATETIME(fsp)
 data class SQLTimestampType(val fractionalSecondsPrecision: Int) : SQLDataType() // For TIMESTAMP(fsp)
 data class SQLYearType : SQLDataType() // For YEAR
+
+data class SQLTextType : SQLDataType() // For TEXT, TINYTEXT, MEDIUMTEXT, LONGTEXT
+data class SQLEnumType(val allowedValues: List<String>) : SQLDataType() // For ENUM
+data class SQLSetType(val allowedValues: Set<String>) : SQLDataType() // For SET
