@@ -275,3 +275,33 @@ override fun serialize(graphState: IGraphState, schemaEntities: SchemaEntities) 
 
     this.writer.flush()
 }
+
+
+fun serialize(graphState: IGraphState) {
+    schemaEntities.getEntities().forEach { (entityName, schemaEntity) ->
+        val graphEntities = graphState[entityName] ?: return@forEach
+
+        graphEntities.forEach { graphEntity ->
+            val columnNames = ArrayList<String>()
+            val values = ArrayList<String>()
+
+            schemaEntity.getColumns().forEach { (columnName, column) ->
+                if (graphEntity.containsKey(columnName)) {
+                    var value = formatColumn(columnName, graphEntity[columnName] ?: "")
+                    if (column.length != -1) {
+                        value = value.substring(0, minOf(value.length, column.length))
+                    }
+                    columnNames.add(columnName)
+                    values.add(value)
+                }
+            }
+
+            val columnsString = columnNames.joinToString(",")
+            val valuesString = values.joinToString(",")
+
+            val sqlStatement = "INSERT INTO $entityName ($columnsString) VALUES ($valuesString);"
+            writer.append(sqlStatement)
+        }
+    }
+    writer.flush()
+}
