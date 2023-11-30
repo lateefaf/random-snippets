@@ -239,24 +239,29 @@ override fun serialize(graphState: IGraphState, schemaEntities: SchemaEntities) 
     val schemaEntity = schemaEntities[entityName]
     val graphEntities = graphState[entityName] ?: return
 
-    val columnNames = ArrayList<String>(schemaEntity.size)
-
-    // Prepare column names only once, assuming all graph entities have the same structure
-    schemaEntity.forEach { possibleColumns ->
-        possibleColumns.firstOrNull()?.let { column ->
-            columnNames.add(column.columnName)
-        }
-    }
-
     graphEntities.forEach { graphEntity ->
+        val columnNames = ArrayList<String>(schemaEntity.size)
         val values = ArrayList<String>()
 
-        columnNames.forEach { columnName ->
-            if (graphEntity.containsKey(columnName)) {
-                var value = formatColumn(columnName, graphEntity[columnName] ?: "")
-                // Assuming 'formatColumn' handles length and other formatting
-                values.add(value)
-            } else {
+        for (schemaIdx in schemaEntity.indices) {
+            val possibleColumns = schemaEntity[schemaIdx]
+            var found = false
+
+            for (column in possibleColumns) {
+                if (graphEntity.containsKey(column.columnName)) {
+                    var value = formatColumn(column.columnName, graphEntity[column.columnName] ?: "")
+                    if (column.length != -1) {
+                        value = value.substring(0, minOf(value.length, column.length))
+                    }
+                    columnNames.add(column.columnName)
+                    values.add(value)
+
+                    found = true
+                    break
+                }
+            }
+
+            if (!found) {
                 // TODO: Handle the case where the column is not found in the graph entity
             }
         }
