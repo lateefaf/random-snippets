@@ -234,3 +234,39 @@ data class SQLYearType : SQLDataType() // For YEAR
 data class SQLTextType : SQLDataType() // For TEXT, TINYTEXT, MEDIUMTEXT, LONGTEXT
 data class SQLEnumType(val allowedValues: List<String>) : SQLDataType() // For ENUM
 data class SQLSetType(val allowedValues: Set<String>) : SQLDataType() // For SET
+
+override fun serialize(graphState: IGraphState, schemaEntities: SchemaEntities) {
+    val schemaEntity = schemaEntities[entityName]
+    val graphEntities = graphState[entityName] ?: return
+
+    val columnNames = ArrayList<String>(schemaEntity.size)
+
+    // Prepare column names only once, assuming all graph entities have the same structure
+    schemaEntity.forEach { possibleColumns ->
+        possibleColumns.firstOrNull()?.let { column ->
+            columnNames.add(column.columnName)
+        }
+    }
+
+    graphEntities.forEach { graphEntity ->
+        val values = ArrayList<String>()
+
+        columnNames.forEach { columnName ->
+            if (graphEntity.containsKey(columnName)) {
+                var value = formatColumn(columnName, graphEntity[columnName] ?: "")
+                // Assuming 'formatColumn' handles length and other formatting
+                values.add(value)
+            } else {
+                // TODO: Handle the case where the column is not found in the graph entity
+            }
+        }
+
+        val columnsString = columnNames.joinToString(",")
+        val valuesString = values.joinToString(",")
+
+        val sqlStatement = "INSERT INTO $entityName ($columnsString) VALUES ($valuesString);"
+        this.writer.write(sqlStatement)
+    }
+
+    this.writer.flush()
+}
