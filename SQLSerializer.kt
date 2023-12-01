@@ -7,16 +7,37 @@ class SQLSerializer(
     private val writer = StringBuilder()
 
     fun serialize(graphState: IGraphState, schemaEntities: SchemaEntities) {
-        schemaEntities.forEach { (entityName, schemaEntity) ->
-            val graphEntity = graphState[entityName] ?: return
+        val schemaEntity = schemaEntities[entityName]
+        val graphEntity = graphState[entityName]!!
+
+        schemaEntities.forEach { _ ->
 
             val columnNames = ArrayList<String>()
             val values = ArrayList<String>()
 
-            for (schemaColumn in schemaEntity) {
-                graphEntity[schemaColumn.columnName]?.let { value ->
-                    columnNames.add(schemaColumn.columnName)
-                    values.add(formatColumn(schemaColumn, value))
+            for(schemaIdx in 0 until graphEntity.size){
+                val columnNames = ArrayList<String>(schemaEntity.size)
+                val values = ArrayList<String>()
+
+                val possibleColumns = schemaEntity[schemaIdx]
+
+                var found = false
+                for(column in possibleColumns){
+                    if (graphEntity.containsKey(column.columnName)){
+                        var value = this.formatColumn(column.columnName, graphEntity[column.columnName] ?: "")
+                        if(column.length == -1){
+                            value = value.substring(0, minOf(value.length, column.length))
+                        }
+                        columnNames.add(columnName)
+                        values.add(value)
+
+                        found = true
+                        break
+                    }
+                }
+
+                if(!found){
+                    //TODO Error
                 }
             }
 
@@ -24,8 +45,10 @@ class SQLSerializer(
             val valuesString = values.joinToString(", ")
 
             val sqlStatement = "INSERT INTO $tableName ($columnsString) VALUES ($valuesString);"
-            write(sqlStatement)
+            this.writer.write(sqlStatement)
         }
+
+        this.writer.flush()
     }
 
     private fun formatColumn(schemaColumn: SchemaColumn, value: Any): String {
@@ -93,38 +116,6 @@ class SQLSerializer(
     }
 }
 
-class SQLSerializer(
-        private val tableName: String,
-        private val columnDataTypes: Map<String, String>, // Add this parameter
-        private val appendMode: Boolean = false,
-        private val extension: String = ".sql"
-) {
-    private val writer = StringBuilder()
-
-    fun serialize(graphState: IGraphState, schemaEntities: SchemaEntities, entityName: String) {
-        // ... [Serialization logic]
-    }
-
-    private fun formatColumn(columnName: String, value: Any): String {
-        val dataType = columnDataTypes[columnName] ?: return value.toString()
-
-        return when (dataType) {
-            "CHAR", "VARCHAR", "TEXT", "TINYTEXT", "MEDIUMTEXT" -> formatString(value.toString(), /* Assume length from somewhere */)
-            "VARBINARY" -> formatVarBinary(value as ByteArray, /* Assume length from somewhere */)
-            // ... other data types
-            "INT", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT" -> castToInt(value, dataType)
-            // ... add other data types as needed
-            else -> value.toString()
-        }
-    }
-
-    private fun castToInt(value: Any, dataType: String): String {
-        // ... [castToInt implementation]
-    }
-
-    // ... [Other formatting methods]
-}
-
 // Usage Example
 val columnTypes = mapOf("columnName1" to "VARCHAR", "columnName2" to "INT")
 val serializer = SQLSerializer("tableName", columnTypes)
@@ -184,30 +175,72 @@ private fun formatBlob(value: ByteArray): String {
     return "0x$formattedValue"
 }
 
-private fun formatDate(value: Date): String {
+private fun formatDate(value: Any): String {
+    val date = when (value) {
+        is Date -> value
+        is Calendar -> value.time
+        // Add more conversions if needed
+        else -> throw IllegalArgumentException("Unsupported type for formatDate. Expected Date or Calendar.")
+    }
     val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-    return "'${dateFormat.format(value)}'"
+    return "'${dateFormat.format(date)}'"
 }
 
-private fun formatTime(value: Date, fsp: Int): String {
+private fun formatDate(value: Any): String {
+    val date = when (value) {
+        is Date -> value
+        is Calendar -> value.time
+        else -> throw UnsupportedTypeException(value, "Date or Calendar")
+    }
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+    return "'${dateFormat.format(date)}'"
+}
+
+
+
+private fun formatTime(value: Any, fsp: Int): String {
+    val date = when (value) {
+        is Date -> value
+        is Calendar -> value.time
+        else -> throw IllegalArgumentException("Unsupported type for formatTime. Expected Date or Calendar.")
+    }
     val timeFormat = SimpleDateFormat("HH:mm:ss.${"S".repeat(fsp)}")
-    return "'${timeFormat.format(value)}'"
+    return "'${timeFormat.format(date)}'"
 }
 
-private fun formatDateTime(value: Date, fsp: Int): String {
+
+private fun formatDateTime(value: Any, fsp: Int): String {
+    val dateTime = when (value) {
+        is Date -> value
+        is Calendar -> value.time
+        else -> throw IllegalArgumentException("Unsupported type for formatDateTime. Expected Date or Calendar.")
+    }
     val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.${"S".repeat(fsp)}")
-    return "'${dateTimeFormat.format(value)}'"
+    return "'${dateTimeFormat.format(dateTime)}'"
 }
 
-private fun formatTimestamp(value: Date, fsp: Int): String {
+
+private fun formatTimestamp(value: Any, fsp: Int): String {
+    val timestamp = when (value) {
+        is Date -> value
+        is Calendar -> value.time
+        else -> throw IllegalArgumentException("Unsupported type for formatTimestamp. Expected Date or Calendar.")
+    }
     val timestampFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.${"S".repeat(fsp)}")
-    return "'${timestampFormat.format(value)}'"
+    return "'${timestampFormat.format(timestamp)}'"
 }
 
-private fun formatYear(value: Date): String {
+
+private fun formatYear(value: Any): String {
+    val year = when (value) {
+        is Date -> value
+        is Calendar -> value.time
+        else -> throw IllegalArgumentException("Unsupported type for formatYear. Expected Date or Calendar.")
+    }
     val yearFormat = SimpleDateFormat("yyyy")
-    return "'${yearFormat.format(value)}'"
+    return "'${yearFormat.format(year)}'"
 }
+
 
 private fun formatText(value: String): String {
     return "'${value.replace("'", "''")}'"
@@ -305,3 +338,8 @@ fun serialize(graphState: IGraphState) {
     }
     writer.flush()
 }
+
+class UnsupportedTypeException(
+        value: Any,
+        expectedType: String
+) : IllegalArgumentException("Unsupported type: ${value::class.simpleName}. Expected: $expectedType.")
