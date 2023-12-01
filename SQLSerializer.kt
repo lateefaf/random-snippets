@@ -343,3 +343,14 @@ class UnsupportedTypeException(
         value: Any,
         expectedType: String
 ) : IllegalArgumentException("Unsupported type: ${value::class.simpleName}. Expected: $expectedType.")
+
+// Ensure total number of digits does not exceed precision
+val stringValue = bigDecimal.toPlainString()
+val decimalIndex = stringValue.indexOf('.')
+val endIndex = if (decimalIndex != -1) {
+    minOf(decimalIndex + precision + 1, stringValue.length)
+} else {
+    minOf(precision, stringValue.length)
+}
+
+return stringValue.substring(0, endIndex)
