@@ -353,4 +353,59 @@ val endIndex = if (decimalIndex != -1) {
     minOf(precision, stringValue.length)
 }
 
-return stringValue.substring(0, endIndex)
+return stringValue.substring(0, endIndex
+
+
+SQLStringType Format Function Tests:
+If a string shorter than the maximum length is formatted, then it should remain unchanged except for escaping single quotes.
+If a string longer than the maximum length is formatted, then it should be truncated to the maximum length.
+If a string contains single quotes, then they should be escaped in the formatted output.
+
+SQLDecimalType Format Function Tests:
+If a BigDecimal value is formatted, then it should adhere to the specified scale.
+If a BigDecimal value has more digits than the specified scale, then it should be rounded according to RoundingMode.HALF_UP.
+
+SQLFloatType Format Function Tests:
+If a Float value is formatted, then it should be rounded and truncated according to the specified scale and precision.
+If a Float value exceeds the specified precision, then it should be truncated to match the precision.
+
+SQLBinaryType Format Function Tests:
+If a ByteArray is formatted, then it should be converted to a hexadecimal string of the specified length.
+If a ByteArray shorter than the specified length is formatted, then the entire array should be converted without padding.
+
+SQLBlobType Format Function Tests:
+If a ByteArray is formatted as a blob, then it should be converted to a complete hexadecimal string without truncation.
+
+SQLDateType Format Function Tests:
+If a Date object is formatted, then it should be converted to a string in yyyy-MM-dd format.
+If a String representing a date is formatted, then it should be parsed and formatted to yyyy-MM-dd.
+If a LocalDateTime object is formatted, then it should be converted to a Date and formatted to yyyy-MM-dd.
+
+SQLTimeType Format Function Tests:
+If a Date object is formatted, then it should be converted to a time string with the specified fractional seconds precision.
+If a LocalDateTime is formatted, then it should be converted to a Date and formatted as a time string with fractional seconds precision.
+
+SQLDateTimeType Format Function Tests:
+If a Date object is formatted, then it should be converted to a datetime string with the specified fractional seconds precision.
+If a LocalDateTime is formatted, then it should be converted and formatted as a datetime string with fractional seconds precision.
+
+SQLTimestampType Format Function Tests:
+If a Date object is formatted as a timestamp, then it should be formatted with the specified fractional seconds precision.
+If a LocalDateTime is formatted as a timestamp, then it should be converted and formatted with the specified fractional seconds precision.
+
+SQLYearType Format Function Tests:
+If a Date object is formatted as a year, then only the year part should be extracted and formatted.
+
+SQLEnumType Format Function Tests:
+If an allowed value for an enum is formatted, then it should be returned as a string with single quotes.
+
+SQLSetType Format Function Tests:
+If an allowed value for a set is formatted, then it should be returned as a string with single quotes.
+
+SQLSerializer validateArgs Function Tests:
+If validateArgs is called with valid columnDataTypes, then no exception should be thrown.
+If validateArgs is called with an empty columnDataTypes map, then an exception should be thrown.
+If validateArgs is called with a columnDataTypes map containing an empty column name, then an exception should be thrown.
+If validateArgs is called with a columnDataTypes map containing an invalid data type, then an exception should be thrown.
+
+These unit tests cover the essential functionality and edge cases of the SQLDataType classes and the SQLSerializer's argument validation, ensuring that the classes behave as expected under various conditions.
