@@ -642,42 +642,42 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.*
+
 class SQLSerializerTest {
 
     @Test
     fun `serialize should generate correct SQL insert statement`() {
-        // Mock IGraphState and SchemaEntities
-        val mockGraphState = mock(IGraphState::class.java)
-        val mockSchemaEntities = mock(SchemaEntities::class.java)
-
-        // Create test data
+        // Prepare test data
         val entityName = "User"
-        val schemaEntity = listOf(
-            column("User", "ID", 0, SQLIntegerType(), 4),
-            column("User", "Name", 1, SQLStringType(50), 50)
+        val columnDataTypes = mapOf(
+            "ID" to SQLIntegerType(),
+            "Name" to SQLStringType(50),
+            "Balance" to SQLDecimalType(10, 2)
         )
-        val graphEntity = mapOf("ID" to 1, "Name" to "Alice")
 
-        `when`(mockSchemaEntities[entityName]).thenReturn(schemaEntity)
-        `when`(mockGraphState[entityName]).thenReturn(graphEntity)
-
-        // Mock writer
+        val graphState: IGraphState = mock(IGraphState::class.java)
         val mockWriter = mock(Writer::class.java)
 
-        // Create instance of SQLSerializer
-        val serializer = SQLSerializer(entityName, mockWriter)
+        // Mocking graph state
+        `when`(graphState[entityName]).thenReturn(
+            mapOf("ID" to 1, "Name" to "Alice", "Balance" to BigDecimal("123.45"))
+        )
+
+        // Create instance of SQLSerializer with mocked writer
+        val serializer = SQLSerializer(entityName, columnDataTypes, false, ".sql", mockWriter)
 
         // Call serialize
-        serializer.serialize(mockGraphState, mockSchemaEntities)
+        serializer.serialize(graphState)
 
         // Verify the writer is called with the correct SQL statement
-        val expectedSQL = "INSERT INTO User (ID,Name) VALUES (1,'Alice');\n"
+        val expectedSQL = "INSERT INTO User (ID,Name,Balance) VALUES (1,'Alice',123.45);\n"
         verify(mockWriter).write(expectedSQL)
         verify(mockWriter).flush()
     }
 
-    private fun column(entityName: String, columnName: String, index: Int, dataType: SQLDataType, length: Int): Column {
-        // Create and return a Column object or similar
-        // This needs to be adjusted based on your actual Column class implementation
-    }
+    // Other necessary test setups or mocks
+}
 }
