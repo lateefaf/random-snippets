@@ -612,4 +612,27 @@ class SQLSerializerUnitTests {
         }
     }
 
+    // Test for the format function
+
+    @Test
+    fun `if an integer value is formatted, then it should be converted to a string`() {
+        val integerType = SQLIntegerType()
+        val result = integerType.format(123)
+        assertEquals("123", result)
+    }
+
+    @Test
+    fun `if a negative integer value is formatted, then it should be converted to a string`() {
+        val integerType = SQLIntegerType()
+        val result = integerType.format(-456)
+        assertEquals("-456", result)
+    }
+
+    @Test
+    fun `if zero is formatted, then it should be converted to a string '0'`() {
+        val integerType = SQLIntegerType()
+        val result = integerType.format(0)
+        assertEquals("0", result)
+    }
+
 }
