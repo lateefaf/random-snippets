@@ -636,3 +636,48 @@ class SQLSerializerUnitTests {
     }
 
 }
+
+
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.*
+
+class SQLSerializerTest {
+
+    @Test
+    fun `serialize should generate correct SQL insert statement`() {
+        // Mock IGraphState and SchemaEntities
+        val mockGraphState = mock(IGraphState::class.java)
+        val mockSchemaEntities = mock(SchemaEntities::class.java)
+
+        // Create test data
+        val entityName = "User"
+        val schemaEntity = listOf(
+            column("User", "ID", 0, SQLIntegerType(), 4),
+            column("User", "Name", 1, SQLStringType(50), 50)
+        )
+        val graphEntity = mapOf("ID" to 1, "Name" to "Alice")
+
+        `when`(mockSchemaEntities[entityName]).thenReturn(schemaEntity)
+        `when`(mockGraphState[entityName]).thenReturn(graphEntity)
+
+        // Mock writer
+        val mockWriter = mock(Writer::class.java)
+
+        // Create instance of SQLSerializer
+        val serializer = SQLSerializer(entityName, mockWriter)
+
+        // Call serialize
+        serializer.serialize(mockGraphState, mockSchemaEntities)
+
+        // Verify the writer is called with the correct SQL statement
+        val expectedSQL = "INSERT INTO User (ID,Name) VALUES (1,'Alice');\n"
+        verify(mockWriter).write(expectedSQL)
+        verify(mockWriter).flush()
+    }
+
+    private fun column(entityName: String, columnName: String, index: Int, dataType: SQLDataType, length: Int): Column {
+        // Create and return a Column object or similar
+        // This needs to be adjusted based on your actual Column class implementation
+    }
+}
