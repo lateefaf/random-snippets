@@ -534,4 +534,82 @@ class SQLSerializerUnitTests {
         assertEquals("NULL", result)
     }
 
+    private val allowedValues = listOf("ACTIVE", "INACTIVE", "SUSPENDED")
+
+    // Test for the format function
+
+    @Test
+    fun `if a valid enum value is formatted, then it should be enclosed in single quotes`() {
+        val enumType = SQLEnumType(allowedValues)
+        val result = enumType.format("ACTIVE")
+        assertEquals("'ACTIVE'", result)
+    }
+
+    @Test
+    fun `if an invalid enum value is formatted, then it should throw an exception`() {
+        val enumType = SQLEnumType(allowedValues)
+        assertThrows<IllegalArgumentException> {
+            enumType.format("UNKNOWN")
+        }
+    }
+
+    @Test
+    fun `if a null value is formatted, then it should be converted to SQL NULL`() {
+        val enumType = SQLEnumType(allowedValues)
+        val result = enumType.format(null)
+        assertEquals("NULL", result)
+    }
+
+    private val allowedValuesSet = setOf("READ", "WRITE", "EXECUTE")
+
+    // Test for the format function
+
+    @Test
+    fun `if a valid set value is formatted, then it should be enclosed in single quotes and escape single quotes`() {
+        val setType = SQLSetType(allowedValuesSet)
+        val result = setType.format("READ,WRITE")
+        assertEquals("'READ,WRITE'", result)
+    }
+
+    // Test for the validate function
+
+    @Test
+    fun `validate should pass when allowedValues is not empty`() {
+        val setType = SQLSetType(allowedValuesSet)
+        assertDoesNotThrow { setType.validate() }
+    }
+
+    @Test
+    fun `validate should throw an exception when allowedValues is empty`() {
+        val setType = SQLSetType(emptySet())
+        assertThrows<IllegalArgumentException> { setType.validate() }
+    }
+
+    // Additional tests to reflect specific handling in the format function
+
+    @Test
+    fun `if a string with single quotes is formatted, then single quotes should be escaped`() {
+        val setType = SQLSetType(allowedValuesSet)
+        val result = setType.format("READ,'WRITE'")
+        assertEquals("'READ,''WRITE'''", result)
+    }
+
+    @Test
+    fun `if a null value is formatted, then it should be converted to SQL NULL`() {
+        val setType = SQLSetType(allowedValuesSet)
+        val result = setType.format(null)
+        assertEquals("NULL", result)
+    }
+
+    fun format(value: Any?): String {
+        return if (value == null) {
+            "NULL"
+        } else {
+            // Assuming 'value' is a string. If 'value' can be of other types, you might need additional handling.
+            val stringValue = value as String
+            // Escape single quotes in the string value.
+            "'${stringValue.replace("'", "''")}'"
+        }
+    }
+
 }
