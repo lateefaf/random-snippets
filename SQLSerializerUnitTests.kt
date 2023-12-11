@@ -680,4 +680,34 @@ class SQLSerializerTest {
         // Create and return a Column object or similar
         // This needs to be adjusted based on your actual Column class implementation
     }
+
+    @Test
+    fun `serialize should handle missing column in graphState`() {
+        val columnDataTypes = mapOf("ID" to SQLIntegerType(), "Name" to SQLStringType(50))
+        val graphState: IGraphState = mock(IGraphState::class.java)
+        val mockWriter = mock(Writer::class.java)
+
+        `when`(graphState["User"]).thenReturn(mapOf("ID" to 1)) // Missing "Name"
+
+        val serializer = SQLSerializer("User", columnDataTypes, false, ".sql", mockWriter)
+
+        assertThrows<MissingDataException> {
+            serializer.serialize(graphState)
+        }
+    }
+
+    @Test
+    fun `serialize should handle invalid data type`() {
+        val columnDataTypes = mapOf("ID" to SQLIntegerType(), "Balance" to SQLDecimalType(10, 2))
+        val graphState: IGraphState = mock(IGraphState::class.java)
+        val mockWriter = mock(Writer::class.java)
+
+        `when`(graphState["User"]).thenReturn(mapOf("ID" to 1, "Balance" to "invalid")) // Invalid balance type
+
+        val serializer = SQLSerializer("User", columnDataTypes, false, ".sql", mockWriter)
+
+        assertThrows<InvalidDataTypeException> {
+            serializer.serialize(graphState)
+        }
+    }
 }
