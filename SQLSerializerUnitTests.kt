@@ -234,4 +234,304 @@ class SQLSerializerUnitTests {
             dateType.format(invalidDateString)
         }
     }
+
+    //SQLTimeTest
+    // Test for the format function
+
+    @Test
+    fun `if a Date is formatted with SQLTimeType, then it should be converted to a time string`() {
+        val timeType = SQLTimeType(3)  // Milliseconds precision
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 15)
+            set(Calendar.MINUTE, 30)
+            set(Calendar.SECOND, 45)
+            set(Calendar.MILLISECOND, 123)
+        }
+        val date = calendar.time
+        val result = timeType.format(date)
+        assertEquals("'15:30:45.123'", result)
+    }
+
+    @Test
+    fun `if a LocalDateTime is formatted with SQLTimeType, then it should be converted to a time string`() {
+        val timeType = SQLTimeType(2)  // Seconds fraction precision
+        val localDateTime = LocalDateTime.of(2021, 7, 1, 15, 30, 45, 123000000)
+        val date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant())
+        val result = timeType.format(date)
+        assertEquals("'15:30:45.12'", result)
+    }
+
+    @Test
+    fun `if a String representing a time is formatted with SQLTimeType, then it should be parsed and formatted to a time string`() {
+        val timeType = SQLTimeType(1)  // Tenths of a second precision
+        val timeFormat = SimpleDateFormat("HH:mm:ss.S")
+        val timeString = "15:30:45.1"
+        val time = timeFormat.parse(timeString)
+        val result = timeType.format(time)
+        assertEquals("'15:30:45.1'", result)
+    }
+
+    // Test for error scenarios
+
+    @Test
+    fun `if an invalid string is formatted with SQLTimeType, then it should throw an exception`() {
+        val timeType = SQLTimeType(3)
+        val invalidTimeString = "invalid-time"
+        assertThrows<IllegalArgumentException> {
+            timeType.format(invalidTimeString)
+        }
+    }
+
+    //SQLDateTimeType
+    // Test for the format function
+
+    @Test
+    fun `if a Date is formatted with SQLDateTimeType, then it should be converted to a datetime string`() {
+        val dateTimeType = SQLDateTimeType(3)  // Milliseconds precision
+        val calendar = Calendar.getInstance().apply {
+            set(2021, Calendar.JULY, 1, 15, 30, 45)
+            set(Calendar.MILLISECOND, 123)
+        }
+        val date = calendar.time
+        val result = dateTimeType.format(date)
+        assertEquals("'2021-07-01 15:30:45.123'", result)
+    }
+
+    @Test
+    fun `if a LocalDateTime is formatted with SQLDateTimeType, then it should be converted to a datetime string`() {
+        val dateTimeType = SQLDateTimeType(2)  // Seconds fraction precision
+        val localDateTime = LocalDateTime.of(2021, 7, 1, 15, 30, 45, 123000000)
+        val date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant())
+        val result = dateTimeType.format(date)
+        assertEquals("'2021-07-01 15:30:45.12'", result)
+    }
+
+    @Test
+    fun `if a String representing a datetime is formatted with SQLDateTimeType, then it should be parsed and formatted to a datetime string`() {
+        val dateTimeType = SQLDateTimeType(1)  // Tenths of a second precision
+        val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S")
+        val dateTimeString = "2021-07-01 15:30:45.1"
+        val dateTime = dateTimeFormat.parse(dateTimeString)
+        val result = dateTimeType.format(dateTime)
+        assertEquals("'2021-07-01 15:30:45.1'", result)
+    }
+
+    // Test for error scenarios
+
+    @Test
+    fun `if an invalid string is formatted with SQLDateTimeType, then it should throw an exception`() {
+        val dateTimeType = SQLDateTimeType(3)
+        val invalidDateTimeString = "invalid-datetime"
+        assertThrows<IllegalArgumentException> {
+            dateTimeType.format(invalidDateTimeString)
+        }
+    }
+
+    //SQLYearType
+    // Test for the format function
+
+    @Test
+    fun `if a Date is formatted with SQLYearType, then it should be converted to a year string`() {
+        val yearType = SQLYearType()
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, 2021)
+        }
+        val date = calendar.time
+        val result = yearType.format(date)
+        assertEquals("'2021'", result)
+    }
+
+    @Test
+    fun `if a LocalDateTime is formatted with SQLYearType, then it should be converted to a year string`() {
+        val yearType = SQLYearType()
+        val localDateTime = LocalDateTime.of(2021, 7, 1, 15, 30)
+        val date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant())
+        val result = yearType.format(date)
+        assertEquals("'2021'", result)
+    }
+
+    @Test
+    fun `if a String representing a year is formatted with SQLYearType, then it should be parsed and formatted to a year string`() {
+        val yearType = SQLYearType()
+        val yearFormat = SimpleDateFormat("yyyy")
+        val yearString = "2021"
+        val year = yearFormat.parse(yearString)
+        val result = yearType.format(year)
+        assertEquals("'2021'", result)
+    }
+
+    // Test for error scenarios
+
+    @Test
+    fun `if an invalid string is formatted with SQLYearType, then it should throw an exception`() {
+        val yearType = SQLYearType()
+        val invalidYearString = "invalid-year"
+        assertThrows<IllegalArgumentException> {
+            yearType.format(invalidYearString)
+        }
+    }
+
+    // Test for the format function
+
+    @Test
+    fun `if a Date is formatted with SQLTimeType, then it should be converted to a time string`() {
+        val timeType = SQLTimeType(3)  // Milliseconds precision
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 15)
+            set(Calendar.MINUTE, 30)
+            set(Calendar.SECOND, 45)
+            set(Calendar.MILLISECOND, 123)
+        }
+        val date = calendar.time
+        val result = timeType.format(date)
+        assertEquals("'15:30:45.123'", result)
+    }
+
+    @Test
+    fun `if a LocalDateTime is formatted with SQLTimeType, then it should be converted to a time string`() {
+        val timeType = SQLTimeType(2)  // Seconds fraction precision
+        val localDateTime = LocalDateTime.of(2021, 7, 1, 15, 30, 45, 123000000)
+        val date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant())
+        val result = timeType.format(date)
+        assertEquals("'15:30:45.12'", result)
+    }
+
+    @Test
+    fun `if a String representing a time is formatted with SQLTimeType, then it should be parsed and formatted to a time string`() {
+        val timeType = SQLTimeType(1)  // Tenths of a second precision
+        val timeFormat = SimpleDateFormat("HH:mm:ss.S")
+        val timeString = "15:30:45.1"
+        val time = timeFormat.parse(timeString)
+        val result = timeType.format(time)
+        assertEquals("'15:30:45.1'", result)
+    }
+
+    // Test for error scenarios
+
+    @Test
+    fun `if an invalid string is formatted with SQLTimeType, then it should throw an exception`() {
+        val timeType = SQLTimeType(3)
+        val invalidTimeString = "invalid-time"
+        assertThrows<IllegalArgumentException> {
+            timeType.format(invalidTimeString)
+        }
+    }
+
+    // Test for the format function
+
+    @Test
+    fun `if a Date is formatted with SQLDateTimeType, then it should be converted to a datetime string`() {
+        val dateTimeType = SQLDateTimeType(3)  // Milliseconds precision
+        val calendar = Calendar.getInstance().apply {
+            set(2021, Calendar.JULY, 1, 15, 30, 45)
+            set(Calendar.MILLISECOND, 123)
+        }
+        val date = calendar.time
+        val result = dateTimeType.format(date)
+        assertEquals("'2021-07-01 15:30:45.123'", result)
+    }
+
+    @Test
+    fun `if a LocalDateTime is formatted with SQLDateTimeType, then it should be converted to a datetime string`() {
+        val dateTimeType = SQLDateTimeType(2)  // Seconds fraction precision
+        val localDateTime = LocalDateTime.of(2021, 7, 1, 15, 30, 45, 123000000)
+        val date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant())
+        val result = dateTimeType.format(date)
+        assertEquals("'2021-07-01 15:30:45.12'", result)
+    }
+
+    @Test
+    fun `if a String representing a datetime is formatted with SQLDateTimeType, then it should be parsed and formatted to a datetime string`() {
+        val dateTimeType = SQLDateTimeType(1)  // Tenths of a second precision
+        val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S")
+        val dateTimeString = "2021-07-01 15:30:45.1"
+        val dateTime = dateTimeFormat.parse(dateTimeString)
+        val result = dateTimeType.format(dateTime)
+        assertEquals("'2021-07-01 15:30:45.1'", result)
+    }
+
+    // Test for error scenarios
+
+    @Test
+    fun `if an invalid string is formatted with SQLDateTimeType, then it should throw an exception`() {
+        val dateTimeType = SQLDateTimeType(3)
+        val invalidDateTimeString = "invalid-datetime"
+        assertThrows<IllegalArgumentException> {
+            dateTimeType.format(invalidDateTimeString)
+        }
+    }
+
+    // Test for the format function
+
+    @Test
+    fun `if a Date is formatted with SQLYearType, then it should be converted to a year string`() {
+        val yearType = SQLYearType()
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, 2021)
+        }
+        val date = calendar.time
+        val result = yearType.format(date)
+        assertEquals("'2021'", result)
+    }
+
+    @Test
+    fun `if a LocalDateTime is formatted with SQLYearType, then it should be converted to a year string`() {
+        val yearType = SQLYearType()
+        val localDateTime = LocalDateTime.of(2021, 7, 1, 15, 30)
+        val date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant())
+        val result = yearType.format(date)
+        assertEquals("'2021'", result)
+    }
+
+    @Test
+    fun `if a String representing a year is formatted with SQLYearType, then it should be parsed and formatted to a year string`() {
+        val yearType = SQLYearType()
+        val yearFormat = SimpleDateFormat("yyyy")
+        val yearString = "2021"
+        val year = yearFormat.parse(yearString)
+        val result = yearType.format(year)
+        assertEquals("'2021'", result)
+    }
+
+    // Test for error scenarios
+
+    @Test
+    fun `if an invalid string is formatted with SQLYearType, then it should throw an exception`() {
+        val yearType = SQLYearType()
+        val invalidYearString = "invalid-year"
+        assertThrows<IllegalArgumentException> {
+            yearType.format(invalidYearString)
+        }
+    }
+
+    // Test for the format function
+
+    @Test
+    fun `if a string is formatted with SQLTextType, then it should be enclosed in single quotes`() {
+        val textType = SQLTextType()
+        val result = textType.format("Hello World")
+        assertEquals("'Hello World'", result)
+    }
+
+    @Test
+    fun `if a string contains single quotes, then they should be escaped`() {
+        val textType = SQLTextType()
+        val result = textType.format("O'Reilly")
+        assertEquals("'O''Reilly'", result)
+    }
+
+    @Test
+    fun `if a string contains special characters, then they should be preserved`() {
+        val textType = SQLTextType()
+        val result = textType.format("Hello\nWorld")
+        assertEquals("'Hello\nWorld'", result)
+    }
+
+    @Test
+    fun `if a null value is formatted, then it should be converted to SQL NULL`() {
+        val textType = SQLTextType()
+        val result = textType.format(null)
+        assertEquals("NULL", result)
+    }
+
 }
