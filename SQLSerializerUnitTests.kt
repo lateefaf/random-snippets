@@ -721,12 +721,18 @@ import org.mockito.Mockito.*
 class SQLSerializerTest {
 
     private lateinit var graphState: IGraphState
+    private lateinit var schemaEntities: SchemaEntities
     private lateinit var columnDataTypes: Map<String, SQLDataType>
     private lateinit var mockWriter: Writer
 
     @BeforeEach
     fun setup() {
         graphState = IGraphState()  // Assuming IGraphState() is the correct way to instantiate it
+        schemaEntities = SchemaEntities(listOf(
+            SchemaColumn("User", "ID", 0, SQLIntegerType(), 4),
+            SchemaColumn("User", "Name", 1, SQLStringType(50), 50),
+            SchemaColumn("User", "Balance", 2, SQLDecimalType(10, 2), 10)
+        ))
         columnDataTypes = mapOf(
             "ID" to SQLIntegerType(),
             "Name" to SQLStringType(50),
