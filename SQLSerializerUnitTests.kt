@@ -697,7 +697,7 @@ class SQLSerializerTest {
     }
 
     @Test
-    fun `serialize should handle invalid data type`() {
+        fun `serialize should handle invalid data type`() {
         val columnDataTypes = mapOf("ID" to SQLIntegerType(), "Balance" to SQLDecimalType(10, 2))
         val graphState: IGraphState = mock(IGraphState::class.java)
         val mockWriter = mock(Writer::class.java)
@@ -710,4 +710,70 @@ class SQLSerializerTest {
             serializer.serialize(graphState)
         }
     }
+}
+
+
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.*
+
+class SQLSerializerTest {
+
+    private lateinit var graphState: IGraphState
+    private lateinit var columnDataTypes: Map<String, SQLDataType>
+    private lateinit var mockWriter: Writer
+
+    @BeforeEach
+    fun setup() {
+        graphState = IGraphState()  // Assuming IGraphState() is the correct way to instantiate it
+        columnDataTypes = mapOf(
+            "ID" to SQLIntegerType(),
+            "Name" to SQLStringType(50),
+            "Balance" to SQLDecimalType(10, 2)
+        )
+        mockWriter = mock(Writer::class.java)
+    }
+
+    @Test
+    fun `serialize should generate correct SQL insert statement`() {
+        graphState["User", "ID"] = 1
+        graphState["User", "Name"] = "Alice"
+        graphState["User", "Balance"] = BigDecimal("123.45")
+
+        val serializer = SQLSerializer("User", columnDataTypes, false, ".sql", mockWriter)
+        serializer.serialize(graphState)
+
+        val expectedSQL = "INSERT INTO User (ID,Name,Balance) VALUES (1,'Alice',123.45);\n"
+        verify(mockWriter).write(expectedSQL)
+        verify(mockWriter).flush()
+    }
+
+    @Test
+    fun `serialize should handle missing column in graphState`() {
+        graphState["User", "ID"] = 1
+        // "Name" is missing
+
+        val serializer = SQLSerializer("User", columnDataTypes, false, ".sql", mockWriter)
+
+        val exception = assertThrows<Exception> {
+            serializer.serialize(graphState)
+        }
+        assertTrue(exception.message!!.contains("Missing data for column"))
+    }
+
+    @Test
+    fun `serialize should handle invalid data type`() {
+        graphState["User", "ID"] = "NotAnInteger"  // Invalid data type for "ID"
+        graphState["User", "Name"] = "Alice"
+        graphState["User", "Balance"] = BigDecimal("123.45")
+
+        val serializer = SQLSerializer("User", columnDataTypes, false, ".sql", mockWriter)
+
+        val exception = assertThrows<InvalidDataTypeException> {
+            serializer.serialize(graphState)
+        }
+        assertTrue(exception.message!!.contains("Invalid data type for column"))
+    }
+
 }
