@@ -728,10 +728,6 @@ class SQLSerializerTest {
     @BeforeEach
     fun setup() {
         graphState = IGraphState()  // Assuming IGraphState() is the correct way to instantiate it
-        schemaEntities = SchemaEntities(listOf(
-            SchemaColumn("User", "ID", 0, SQLIntegerType(), 4),
-            SchemaColumn("User", "Name", 1, SQLStringType(50), 50),
-            SchemaColumn("User", "Balance", 2, SQLDecimalType(10, 2), 10)
         ))
         columnDataTypes = mapOf(
             "ID" to SQLIntegerType(),
@@ -746,10 +742,16 @@ class SQLSerializerTest {
         graphState["User", "ID"] = 1
         graphState["User", "Name"] = "Alice"
         graphState["User", "Balance"] = BigDecimal("123.45")
+        schemaEntities = SchemaEntities(listOf(
+            SchemaColumn("User", "ID", 0, ColumnDataType.Integer, 10),
+            SchemaColumn("User", "Name", 1, ColumnDataType.String, 10) ,
+            SchemaColumn("User", "Balance", 2, ColumnDataType.Double, 10)
+        ))
 
-        val serializer = SQLSerializer("User", columnDataTypes, false, ".sql", mockWriter)
-        serializer.serialize(graphState)
-
+        val serializer = SQLSerializer(columnDataTypes)
+        serializer.entityName = "User"
+        serializer.writer = mockWriter
+        serializer.serialize(graphState, schemaEntities)
         val expectedSQL = "INSERT INTO User (ID,Name,Balance) VALUES (1,'Alice',123.45);\n"
         verify(mockWriter).write(expectedSQL)
         verify(mockWriter).flush()
@@ -760,12 +762,18 @@ class SQLSerializerTest {
         graphState["User", "ID"] = 1
         // "Name" is missing
 
-        val serializer = SQLSerializer("User", columnDataTypes, false, ".sql", mockWriter)
+        schemaEntities = SchemaEntities(listOf(
+            SchemaColumn("User", "ID", 0, ColumnDataType.Integer, 10),
+            SchemaColumn("User", "Name", 1, ColumnDataType.String, 10) ,
+            SchemaColumn("User", "Balance", 2, ColumnDataType.Double, 10)
+        ))
+        val serializer = SQLSerializer(columnDataTypes)
+        serializer.writer = mockWriter
+        serilializer.entityName = "User"
 
-        val exception = assertThrows<Exception> {
-            serializer.serialize(graphState)
+        assertThrows<ColumnDefinitionNotFoundException> {
+            serializer.serialize(graphState, schemaEntities)
         }
-        assertTrue(exception.message!!.contains("Missing data for column"))
     }
 
     @Test

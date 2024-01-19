@@ -270,41 +270,39 @@ data class SQLSetType(val allowedValues: Set<String>) : SQLDataType() // For SET
 
 override fun serialize(graphState: IGraphState, schemaEntities: SchemaEntities) {
     val schemaEntity = schemaEntities[entityName]
-    val graphEntities = graphState[entityName] ?: return
+    val graphEntities = graphState[entityName] !!
 
-    graphEntities.forEach { graphEntity ->
-        val columnNames = ArrayList<String>(schemaEntity.size)
-        val values = ArrayList<String>()
+    val columnNames = ArrayList<String>(schemaEntity.size)
+    val values = ArrayList<String>()
 
-        for (schemaIdx in schemaEntity.indices) {
-            val possibleColumns = schemaEntity[schemaIdx]
-            var found = false
+    for (schemaIdx in 0 until graphEntity.size) {
+        val possibleColumns = schemaEntity[schemaIdx]
+        var found = false
 
-            for (column in possibleColumns) {
-                if (graphEntity.containsKey(column.columnName)) {
-                    var value = formatColumn(column.columnName, graphEntity[column.columnName] ?: "")
-                    if (column.length != -1) {
-                        value = value.substring(0, minOf(value.length, column.length))
-                    }
-                    columnNames.add(column.columnName)
-                    values.add(value)
-
-                    found = true
-                    break
+        for (column in possibleColumns) {
+            if (graphEntity.containsKey(column.columnName)) {
+                var value = formatColumn(column.columnName, graphEntity[column.columnName] ?: "")
+                if (column.length != -1) {
+                    value = value.substring(0, minOf(value.length, column.length))
                 }
-            }
+                columnNames.add(column.columnName)
+                values.add(value)
 
-            if (!found) {
-                // TODO: Handle the case where the column is not found in the graph entity
+                found = true
+                break
             }
         }
 
-        val columnsString = columnNames.joinToString(",")
-        val valuesString = values.joinToString(",")
-
-        val sqlStatement = "INSERT INTO $entityName ($columnsString) VALUES ($valuesString);"
-        this.writer.write(sqlStatement)
+        if (!found) {
+            throw ColumnDefintionNotFoundException()
+        }
     }
+
+    val columnsString = columnNames.joinToString(",")
+    val valuesString = values.joinToString(",")
+
+    val sqlStatement = "INSERT INTO $entityName ($columnsString) VALUES ($valuesString);"
+    this.writer.write(sqlStatement)
 
     this.writer.flush()
 }
