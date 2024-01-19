@@ -75,3 +75,55 @@ if nanoRange is set then nanoRange is not zero
 
 All tests should pass with the current implementation of LinearRandomLocalDateTimeStrategy.
 If any tests fail, raise issues for the necessary fixes before proceeding.
+
+
+class FullNameFourColumnTest {
+
+    private lateinit var mockFaker: Faker
+    private lateinit var fullNameFourColumn: FullNameFourColumn
+    private lateinit var mockGraphState: IGraphState
+
+    @BeforeEach
+    fun setUp() {
+        mockFaker = mock()
+        fullNameFourColumn = FullNameFourColumn().apply {
+            faker = mockFaker
+        }
+        mockGraphState = mock()
+    }
+
+    @Test
+    fun `produce should generate valid full name`() {
+        val firstName = "John"
+        val middleName = "H"
+        val lastName = "Doe"
+        whenever(mockFaker.name().firstName()).thenReturn(firstName)
+        whenever(mockFaker.name().middleName()).thenReturn(middleName)
+        whenever(mockFaker.name().lastName()).thenReturn(lastName)
+
+        val result = fullNameFourColumn.produce(mockGraphState)
+
+        assertEquals(firstName, result[FullNameFourColumn.ARG_NAME_FIRST_NAME_COLUMN])
+        assertEquals(middleName, result[FullNameFourColumn.ARG_NAME_MIDDLE_NAME_COLUMN])
+        assertEquals(lastName, result[FullNameFourColumn.ARG_NAME_LAST_NAME_COLUMN])
+        assertEquals("$firstName $middleName $lastName", result[FullNameFourColumn.ARG_NAME_FULL_NAME_COLUMN])
+    }
+
+    @Test
+    fun `getVirtualColumns should return correct set of columns`() {
+        val virtualColumns = fullNameFourColumn.getVirtualColumns()
+        assertTrue(
+            virtualColumns.containsAll(
+                setOf(
+                    FullNameFourColumn.ARG_NAME_FIRST_NAME_COLUMN,
+                    FullNameFourColumn.ARG_NAME_MIDDLE_NAME_COLUMN,
+                    FullNameFourColumn.ARG_NAME_LAST_NAME_COLUMN,
+                    FullNameFourColumn.ARG_NAME_FULL_NAME_COLUMN
+                )
+            )
+        )
+    }
+}
+Test the produce method to ensure it correctly generates and assigns names to the respective columns.
+Validate that the getVirtualColumns method returns the correct set of column names.
+Ensure the class behaves as expected under normal conditions.
