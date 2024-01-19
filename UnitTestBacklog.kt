@@ -110,6 +110,53 @@ class FullNameFourColumnTest {
     }
 
     @Test
+    fun `produce should generate valid first name`() {
+        val firstName = "John"
+        whenever(mockFaker.name().firstName()).thenReturn(firstName)
+
+        val result = fullNameFourColumn.produce(mockGraphState)
+
+        assertEquals(firstName, result[FullNameFourColumn.ARG_NAME_FIRST_NAME_COLUMN])
+    }
+
+    @Test
+    fun `produce should generate valid middle name`() {
+        val middleName = "A"
+        whenever(mockFaker.name().middleName()).thenReturn(middleName)
+
+        val result = fullNameFourColumn.produce(mockGraphState)
+
+        assertEquals(middleName, result[FullNameFourColumn.ARG_NAME_MIDDLE_NAME_COLUMN])
+    }
+
+    @Test
+    fun `produce should generate valid last name`() {
+        val lastName = "Doe"
+        whenever(mockFaker.name().lastName()).thenReturn(lastName)
+
+        val result = fullNameFourColumn.produce(mockGraphState)
+
+        assertEquals(lastName, result[FullNameFourColumn.ARG_NAME_LAST_NAME_COLUMN])
+    }
+
+    @Test
+    fun `produce should generate valid full name`() {
+        val firstName = "John"
+        val middleName = "H"
+        val lastName = "Doe"
+        whenever(mockFaker.name().firstName()).thenReturn(firstName)
+        whenever(mockFaker.name().middleName()).thenReturn(middleName)
+        whenever(mockFaker.name().lastName()).thenReturn(lastName)
+
+        val result = fullNameFourColumn.produce(mockGraphState)
+
+        assertEquals("$firstName $middleName $lastName", result[FullNameFourColumn.ARG_NAME_FULL_NAME_COLUMN])
+    }
+
+
+
+
+    @Test
     fun `getVirtualColumns should return correct set of columns`() {
         val virtualColumns = fullNameFourColumn.getVirtualColumns()
         assertTrue(
@@ -126,4 +173,4 @@ class FullNameFourColumnTest {
 }
 Test the produce method to ensure it correctly generates and assigns names to the respective columns.
 Validate that the getVirtualColumns method returns the correct set of column names.
-Ensure the class behaves as expected under normal conditions.
+Ensure the class behaves as expected under normal conditions.Needtesting.kt
