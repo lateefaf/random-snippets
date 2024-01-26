@@ -269,3 +269,50 @@ fun erf(x: Double): Double {
 
     return sign * y
 }
+
+@Test(expected = InvalidArgumentException::class)
+fun `validateArguments should throw InvalidArgumentException for non-positive sigma`() {
+    normalDistributionStrategy.sigma = 0.0
+    normalDistributionStrategy.validateArguments(mapOf(), mockSchemaEntities)
+}
+
+@Test
+fun `validateArguments should not throw an exception for positive sigma`() {
+    normalDistributionStrategy.sigma = 1.0
+    assertDoesNotThrow {
+        normalDistributionStrategy.validateArguments(mapOf(), mockSchemaEntities)
+    }
+}
+
+@Test
+fun `produce should return a value based on normal distribution`() {
+    normalDistributionStrategy.mu = 0.0
+    normalDistributionStrategy.sigma = 1.0
+
+    val result = normalDistributionStrategy.produce()
+    assertNotNull(result)
+    // Additional assertions can be made based on statistical properties if necessary
+}
+
+@Test
+fun `producedValuesShouldConformToNormalDistribution`() {
+    val normalDistributionStrategy = NormalDistributionStrategy().apply {
+        mu = 0.0
+        sigma = 1.0
+    }
+    val numberOfValues = 1000  // Number of values to generate
+    val numberOfBins = 10      // Number of bins for the chi-squared test
+
+    // Generate values
+    val values = List(numberOfValues) { normalDistributionStrategy.produce() }
+
+    // Perform chi-squared test
+    val chiSquaredStatistic = performChiSquaredTestApache(values, numberOfBins, normalDistributionStrategy.mu!!, normalDistributionStrategy.sigma!!)
+
+    // Determine the critical value from chi-squared distribution table based on degrees of freedom and desired confidence level
+    // For example, for 10 bins (9 degrees of freedom) and a 95% confidence level, the critical value is around 16.92
+    val criticalValue = 16.92
+
+    // Assert that the chi-squared statistic is less than the critical value
+    assertTrue(chiSquaredStatistic < criticalValue, "Chi-squared statistic is too high, indicating that the produced values do not conform to a normal distribution")
+}
