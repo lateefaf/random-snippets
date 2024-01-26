@@ -97,3 +97,29 @@ class NormalDistrib {
         return generatedValue
     }
 }
+
+
+class NormalDistributionStrategy {
+
+    var mu: Double? = null
+    var sigma: Double? = null
+
+    fun validateArguments(args: Map<String, String>, schema: SchemaEntities) {
+        if(sigma <= 0){
+            throw InvalidArgumentException()
+        }
+    }
+
+
+    fun produce(): Double {
+        // Generate two uniformly distributed random numbers between 0 and 1
+        val u1 = Random.nextDouble(1.0)
+        val u2 = Random.nextDouble(1.0)
+
+        // Box-Muller Transform
+        val z0 = sqrt(-2.0 * ln(u1)) * cos(2.0 * PI * u2)
+
+        return z0 * sigma + mu
+
+    }
+}

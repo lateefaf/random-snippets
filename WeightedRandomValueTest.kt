@@ -64,3 +64,14 @@ class WeightedRandomValueStrategyTest {
         assertTrue(chiSquareStatistic <= criticalValue, "Chi-Square Test failed. The observed frequencies significantly differ from the expected frequencies.")
     }
 }
+
+
+private fun updateMockRandomForCurrentStep(mockRandom: Random, currentStep: Int, expectedSteps: Int){
+    val stepSize = 1.0/ expectedSteps
+    val result = if(currentStep ==0){
+        0.999
+    }else{
+        1.0 - stepSize * (currentStep + 1.0)
+    }
+    whenever(mockRandom.nextDouble()).thenReturn(result)
+}
